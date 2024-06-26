@@ -2,7 +2,8 @@ from colorama import Fore, Back, Style
 from colorama import init
 
 from RAIDExceptions import *
-from RAIDClasses.RAIDController import *
+from Disk import *
+from RaidFile import *
 
 init()
 
@@ -11,7 +12,7 @@ RAID-5: Data is striped across n-1 disks, with parity calculations for each bloc
 '''
 
 
-class RAID5Controller(RAIDController):
+class RAID5Controller():
     files = []
     disks = []
 
@@ -40,21 +41,21 @@ class RAID5Controller(RAIDController):
             file.start_addr = len(self)
 
         self.files.append(file)
-        blocks = list(split_data(file.data_B, len(self.disks) - 1))
+        blocks = list(self.split_data(file.data_B, len(self.disks)-1 ))
         file.padding = (len(self.disks) - 1) - len(blocks[-1])
         self.write_bits(file.data_B + [format(0, bin_format)] * file.padding)
 
         def validate_disks(self, orig_disks=None):
-        for i in range(len(self)):
-            self.validate_parity(self.get_stripe(i))
-        if orig_disks is not None:
-            for i in range(len(orig_disks)):
-                if orig_disks[i] != self.disks[i]:
-                    raise DiskReconstructException("Disk reconstruction failed: Disk " + repr(i) + " corrupted")
+            for i in range(len(self)):
+                self.validate_parity(self.get_stripe(i))
+            if orig_disks is not None:
+                for i in range(len(orig_disks)):
+                    if orig_disks[i] != self.disks[i]:
+                        raise DiskReconstructException("Disk reconstruction failed: Disk " + repr(i) + " corrupted")
 
     # Writes a string of bits to the RAID disks
     def write_bits(self, data):
-        blocks = split_data(data, len(self.disks)-1)
+        blocks = self.split_data(data, len(self.disks)-1)
 
         for x in blocks:
             # Calculate parity bit for block x. We need to convert the bin strings to integers in order to use bit
@@ -155,6 +156,15 @@ class RAID5Controller(RAIDController):
             print()
         print()
 
+
+    def validate_disks(self, orig_disks=None):
+            for i in range(len(self)):
+                self.validate_parity(self.get_stripe(i))
+            if orig_disks is not None:
+                for i in range(len(orig_disks)):
+                    if orig_disks[i] != self.disks[i]:
+                        raise DiskReconstructException("Disk reconstruction failed: Disk " + repr(i) + " corrupted")
+
     # Calculate parity bit for block. We need to convert the bin strings to integers in order to use bit
     # manipulation to calculate the XOR
     @staticmethod
@@ -177,5 +187,6 @@ class RAID5Controller(RAIDController):
     @staticmethod
     def split_data(data, size):
         for i in range(0, len(data), size):
-            yield data[i:i + size]
+            yield data[i:i + size]    
+
 
