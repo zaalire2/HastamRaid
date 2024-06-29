@@ -144,10 +144,10 @@ class RAID5Controller():
             for j in range(len(self.disks)):
                 if i < len(self.disks[j]):
                     if self.disks[j].disk_id == parity_disk:
-                        print("|" + Back.RED + Fore.BLACK + self.disks[j].read(i)[2:], end="")
+                        print("|" + Back.GREEN + Fore.BLACK + self.disks[j].read(i)[2:], end="")
                         print(Style.RESET_ALL, end="")
                     else:
-                        print("|" + Back.YELLOW + Fore.BLACK + self.disks[j].read(i)[2:], end="")
+                        print("|" + Back.WHITE + Fore.BLACK + self.disks[j].read(i)[2:], end="")
                         print(Style.RESET_ALL, end="")
             print("|", end="")
             for f in self.files:
